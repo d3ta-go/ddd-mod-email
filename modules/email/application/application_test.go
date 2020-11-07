@@ -35,6 +35,7 @@ func newHandler(t *testing.T) (*handler.Handler, error) {
 
 	return h, nil
 }
+
 func TestNewEmailApp(t *testing.T) {
 	h, err := newHandler(t)
 	if err != nil {
