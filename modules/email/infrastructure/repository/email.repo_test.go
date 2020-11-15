@@ -8,6 +8,7 @@ import (
 	domSchemaET "github.com/d3ta-go/ddd-mod-email/modules/email/domain/schema/email_template"
 	"github.com/d3ta-go/system/system/handler"
 	"github.com/d3ta-go/system/system/initialize"
+	"github.com/spf13/viper"
 )
 
 func newEmailRepo(t *testing.T) (repository.IEmailRepo, *handler.Handler, error) {
@@ -16,12 +17,22 @@ func newEmailRepo(t *testing.T) (repository.IEmailRepo, *handler.Handler, error)
 		return nil, nil, err
 	}
 
-	c, err := newConfig(t)
+	c, v, err := newConfig(t)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	h.SetDefaultConfig(c)
+	h.SetViper("config", v)
+
+	// viper for test-data
+	viperTest := viper.New()
+	viperTest.SetConfigType("yaml")
+	viperTest.SetConfigName("test-data")
+	viperTest.AddConfigPath("../../../../conf/data")
+	viperTest.ReadInConfig()
+	h.SetViper("test-data", viperTest)
+
 	if err := initialize.LoadAllDatabaseConnection(h); err != nil {
 		return nil, nil, err
 	}
@@ -40,31 +51,42 @@ func TestEMailRepo_Send(t *testing.T) {
 		t.Errorf("Error.newEmailRepo: %s", err.Error())
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email.infra-layer.repo.send")
+	testDataET := viper.GetStringMapString("test-data.email.email.app-layer.service.send.email-template-data")
+
 	req := &domSchemaEmail.SendEmailRequest{
-		TemplateCode: "activate-registration-html",
-		// TemplateCode: "account-activation-html"
-		From: &domSchemaEmail.MailAddress{Email: "d3tago.from@domain.com", Name: "D3TA Golang"},
-		To:   &domSchemaEmail.MailAddress{Email: "d3tago.test@outlook.com", Name: "D3TAgo Test (Outlook)"},
-		CC: []*domSchemaEmail.MailAddress{
-			{Email: "d3tago.test@protonmail.com", Name: "D3TAgo Test CC 1 (Protonmail)"},
-			{Email: "d3tago.test.cc@tutanota.com", Name: "D3TAgo Test CC 2 (Tutanota)"}},
-		BCC: []*domSchemaEmail.MailAddress{
-			{Email: "d3tago.test@tutanota.com", Name: "D3TAgo Test BCC 1 (Tutanota)"},
-			{Email: "d3tago.test.bcc@outlook.com", Name: "D3TAgo Test BCC 2 (Outlook)"}},
-		TemplateData: map[string]interface{}{
-			"Header.Name":        "John Doe",
-			"Body.UserAccount":   "john.doe",
-			"Body.ActivationURL": "https://google.com",
-			"Footer.Name":        "Customer Service",
+		TemplateCode: testData["email-template-code"],
+
+		From: &domSchemaEmail.MailAddress{
+			Email: testData["from-email"], Name: testData["from-name"],
 		},
-		ProcessingType: "SYNC",
+		To: &domSchemaEmail.MailAddress{
+			Email: testData["to-email"], Name: testData["to-name"],
+		},
+		CC: []*domSchemaEmail.MailAddress{
+			{Email: testData["cc-email-01"], Name: testData["cc-name-01"]},
+			{Email: testData["cc-email-02"], Name: testData["cc-name-02"]}},
+		BCC: []*domSchemaEmail.MailAddress{
+			{Email: testData["bcc-email-01"], Name: testData["bcc-name-01"]},
+			{Email: testData["bcc-email-02"], Name: testData["bcc-name-02"]}},
+		TemplateData: map[string]interface{}{
+			"Header.Name":        testDataET["header-name"],
+			"Body.UserAccount":   testDataET["body-user-account"],
+			"Body.ActivationURL": testDataET["body-activation-url"],
+			"Footer.Name":        testDataET["footer-name"],
+		},
+		ProcessingType: testData["processing-type"],
 		Template: &domSchemaET.ETFindByCodeData{
 			EmailTemplate: domSchemaET.EmailTemplate{
 				ID:          1,
 				EmailFormat: "HTML",
 			},
 			DefaultTemplateVersion: domSchemaET.EmailTemplateVersion{
-				SubjectTpl: "Subject Email Template",
+				SubjectTpl: testData["et-tpl-subject"],
 				BodyTpl: `{{define "T"}}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 	</head>

@@ -1,0 +1,97 @@
+---
+# Test Data
+test-data:
+  email:
+    email:
+      app-layer:
+        service:
+          send:
+            bcc-email-01: d3tago.test@tutanota.com
+            bcc-email-02: d3tago.test.bcc@outlook.com
+            bcc-name-01: D3TAgo Test BCC 1 (Tutanota)
+            bcc-name-02: D3TAgo Test BCC 2 (Outlook)
+            cc-email-01: d3tago.test@protonmail.com
+            cc-email-02: d3tago.test.cc@tutanota.com
+            cc-name-01: D3TAgo Test CC 1 (Protonmail)
+            cc-name-02: D3TAgo Test CC 2 (Tutanota)
+            email-template-code: activate-registration-html
+            email-template-data:
+              body-activation-url: https://google.com
+              body-user-account: john.doe
+              footer-name: Customer Service
+              header-name: John Doe
+            from-email: d3tago.from@domain.com
+            from-name: D3TA Golang
+            processing-type: SYNC
+            to-email: d3tago.test@outlook.com
+            to-name: D3TAgo Test (Outlook)
+      infra-layer:
+        repo:
+          send:
+            bcc-email-01: d3tago.test@tutanota.com
+            bcc-email-02: d3tago.test.bcc@outlook.com
+            bcc-name-01: D3TAgo Test BCC 1 (Tutanota)
+            bcc-name-02: D3TAgo Test BCC 2 (Outlook)
+            cc-email-01: d3tago.test@protonmail.com
+            cc-email-02: d3tago.test.cc@tutanota.com
+            cc-name-01: D3TAgo Test CC 1 (Protonmail)
+            cc-name-02: D3TAgo Test CC 2 (Tutanota)
+            email-template-code: activate-registration-html
+            email-template-data:
+              body-activation-url: https://google.com
+              body-user-account: john.doe
+              footer-name: Customer Service
+              header-name: John Doe
+            et-tpl-subject: Subject Email Template
+            from-email: d3tago.from@domain.com
+            from-name: D3TA Golang
+            processing-type: SYNC
+            to-email: d3tago.test@outlook.com
+            to-name: D3TAgo Test (Outlook)
+    email-template:
+      app-layer:
+        service:
+          create:
+            et-code: test.code.%s
+            et-email-format: TEXT
+            et-is-active: true
+            et-name: Template Name %s
+            et-tpl-body: '{{define "T"}}Body Template{{end}}'
+            et-tpl-subject: Subject Template
+          delete:
+            et-code: test.code.75321f7f-1454-4bf5-bdfb-5f8be3de21d4
+          find-by-code:
+            et-code: activate-registration-html
+          set-active:
+            et-code: test.code.75321f7f-1454-4bf5-bdfb-5f8be3de21d4
+            et-is-active: true
+          update:
+            et-code: test.code.75321f7f-1454-4bf5-bdfb-5f8be3de21d4
+            et-email-format: TEXT
+            et-is-active: true
+            et-name: Template Name 75321f7f-1454-4bf5-bdfb-5f8be3de21d4
+            et-tpl-body: '{{define "T"}}Body Template Updated{{end}}'
+            et-tpl-subject: Subject Template Updated
+      infra-layer:
+        repo:
+          create:
+            et-code: test.code.%s
+            et-email-format: TEXT
+            et-is-active: true
+            et-name: Template Name %s
+            et-tpl-body: '{{define "T"}}Body Template{{end}}'
+            et-tpl-subject: Subject Template
+          delete:
+            et-code: test.code.7de643ce-cee4-46af-b5e7-051ab221bc29
+          find-by-code:
+            et-code: activate-registration-html
+          set-active:
+            et-code: test.code.7de643ce-cee4-46af-b5e7-051ab221bc29
+            et-is-active: true
+          update:
+            et-code: test.code.7de643ce-cee4-46af-b5e7-051ab221bc29
+            et-email-format: TEXT
+            et-is-active: true
+            et-name: Template Name 7de643ce-cee4-46af-b5e7-051ab221bc29
+            et-tpl-body: '{{define "T"}}Body Template Updated{{end}}'
+            et-tpl-subject: Subject Template Updated

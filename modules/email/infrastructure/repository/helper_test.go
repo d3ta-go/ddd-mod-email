@@ -6,14 +6,15 @@ import (
 	"github.com/d3ta-go/system/system/config"
 	"github.com/d3ta-go/system/system/handler"
 	"github.com/d3ta-go/system/system/identity"
+	"github.com/spf13/viper"
 )
 
-func newConfig(t *testing.T) (*config.Config, error) {
-	c, _, err := config.NewConfig("../../../../conf")
+func newConfig(t *testing.T) (*config.Config, *viper.Viper, error) {
+	c, v, err := config.NewConfig("../../../../conf")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return c, nil
+	return c, v, nil
 }
 
 func newIdentity(h *handler.Handler, t *testing.T) identity.Identity {

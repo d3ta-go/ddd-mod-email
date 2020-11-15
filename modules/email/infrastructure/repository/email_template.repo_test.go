@@ -1,12 +1,16 @@
 package repository
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/d3ta-go/ddd-mod-email/modules/email/domain/repository"
 	schema "github.com/d3ta-go/ddd-mod-email/modules/email/domain/schema/email_template"
 	"github.com/d3ta-go/system/system/handler"
 	"github.com/d3ta-go/system/system/initialize"
+	"github.com/d3ta-go/system/system/utils"
+	"github.com/spf13/viper"
 )
 
 func newEmailTemplateRepo(t *testing.T) (repository.IEmailTemplateRepo, *handler.Handler, error) {
@@ -15,12 +19,22 @@ func newEmailTemplateRepo(t *testing.T) (repository.IEmailTemplateRepo, *handler
 		return nil, nil, err
 	}
 
-	c, err := newConfig(t)
+	c, v, err := newConfig(t)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	h.SetDefaultConfig(c)
+	h.SetViper("config", v)
+
+	// viper for test-data
+	viperTest := viper.New()
+	viperTest.SetConfigType("yaml")
+	viperTest.SetConfigName("test-data")
+	viperTest.AddConfigPath("../../../../conf/data")
+	viperTest.ReadInConfig()
+	h.SetViper("test-data", viperTest)
+
 	if err := initialize.LoadAllDatabaseConnection(h); err != nil {
 		return nil, nil, err
 	}
@@ -59,8 +73,14 @@ func TestEMailTemplateRepo_FindByCode(t *testing.T) {
 		t.Errorf("Error.newEmailTemplateRepo: %s", err.Error())
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.infra-layer.repo.find-by-code")
+
 	req := &schema.ETFindByCodeRequest{
-		Code: "test.code",
+		Code: testData["et-code"],
 	}
 
 	if err := req.Validate(); err != nil {
@@ -88,14 +108,23 @@ func TestEMailTemplateRepo_Create(t *testing.T) {
 		t.Errorf("Error.newEmailTemplateRepo: %s", err.Error())
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.infra-layer.repo.create")
+
+	unique := utils.GenerateUUID()
+	isActive, _ := strconv.ParseBool(testData["et-is-active"])
+
 	req := &schema.ETCreateRequest{
-		Code:        "test.code.02",
-		Name:        "Template Name 02",
-		IsActive:    true,
-		EmailFormat: "TEXT",
+		Code:        fmt.Sprintf(testData["et-code"], unique),
+		Name:        fmt.Sprintf(testData["et-name"], unique),
+		IsActive:    isActive,
+		EmailFormat: testData["et-email-format"],
 		Template: &schema.ETCreateVersion{
-			SubjectTpl: "Subject Template",
-			BodyTpl:    `{{define "T"}}Body Template{{end}}`,
+			SubjectTpl: testData["et-tpl-subject"],
+			BodyTpl:    testData["et-tpl-body"],
 		},
 	}
 
@@ -114,6 +143,16 @@ func TestEMailTemplateRepo_Create(t *testing.T) {
 
 	if res != nil {
 		respJSON := res.ToJSON()
+		// save to test-data
+		// save result for next test
+		viper.Set("test-data.email.email-template.infra-layer.repo.update.et-code", req.Code)
+		viper.Set("test-data.email.email-template.infra-layer.repo.update.et-name", req.Name)
+
+		viper.Set("test-data.email.email-template.infra-layer.repo.set-active.et-code", req.Code)
+		viper.Set("test-data.email.email-template.infra-layer.repo.delete.et-code", req.Code)
+		if err := viper.WriteConfig(); err != nil {
+			t.Errorf("Error: viper.WriteConfig(), %s", err.Error())
+		}
 		t.Logf("Resp.EmailTemplateRepo.Create: %s", string(respJSON))
 	}
 }
@@ -124,17 +163,24 @@ func TestEMailTemplateRepo_Update(t *testing.T) {
 		t.Errorf("Error.newEmailTemplateRepo: %s", err.Error())
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.infra-layer.repo.update")
+
+	isActive, _ := strconv.ParseBool(testData["et-is-active"])
 	req := &schema.ETUpdateRequest{
 		Keys: &schema.ETUpdateKeys{
-			Code: "test.code.02",
+			Code: testData["et-code"],
 		},
 		Data: &schema.ETUpdateData{
-			Name:        "Template Name 02 Updated",
-			IsActive:    true,
-			EmailFormat: "TEXT",
+			Name:        testData["et-name"] + " Updated",
+			IsActive:    isActive,
+			EmailFormat: testData["et-email-format"],
 			Template: &schema.ETUpdateVersion{
-				SubjectTpl: "Subject Template Updated",
-				BodyTpl:    `{{define "T"}}Body Template Updated{{end}}`,
+				SubjectTpl: testData["et-tpl-subject"],
+				BodyTpl:    testData["et-tpl-body"],
 			},
 		},
 	}
@@ -164,12 +210,19 @@ func TestEMailTemplateRepo_SetActive(t *testing.T) {
 		t.Errorf("Error.newEmailTemplateRepo: %s", err.Error())
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.infra-layer.repo.set-active")
+
+	isActive, _ := strconv.ParseBool(testData["et-is-active"])
 	req := &schema.ETSetActiveRequest{
 		Keys: &schema.ETSetActiveKeys{
-			Code: "test.code.02",
+			Code: testData["et-code"],
 		},
 		Data: &schema.ETSetActiveData{
-			IsActive: true,
+			IsActive: isActive,
 		},
 	}
 
@@ -198,8 +251,14 @@ func TestEMailTemplateRepo_Delete(t *testing.T) {
 		t.Errorf("Error.newEmailTemplateRepo: %s", err.Error())
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.infra-layer.repo.delete")
+
 	req := &schema.ETDeleteRequest{
-		Code: "test.code.02",
+		Code: testData["et-code"],
 	}
 
 	if err := req.Validate(); err != nil {
