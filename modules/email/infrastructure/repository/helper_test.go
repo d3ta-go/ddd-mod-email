@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/d3ta-go/system/system/config"
@@ -13,6 +14,9 @@ func newConfig(t *testing.T) (*config.Config, *viper.Viper, error) {
 	c, v, err := config.NewConfig("../../../../conf")
 	if err != nil {
 		return nil, nil, err
+	}
+	if !c.CanRunTest() {
+		panic(fmt.Sprintf("Cannot Run Test on env `%s`, allowed: %v", c.Environment.Stage, c.Environment.RunTestEnvironment))
 	}
 	return c, v, nil
 }
