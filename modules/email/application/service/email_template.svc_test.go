@@ -1,12 +1,16 @@
 package service
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	appDTO "github.com/d3ta-go/ddd-mod-email/modules/email/application/dto/email_template"
 	domSchema "github.com/d3ta-go/ddd-mod-email/modules/email/domain/schema/email_template"
 	"github.com/d3ta-go/system/system/handler"
 	"github.com/d3ta-go/system/system/initialize"
+	"github.com/d3ta-go/system/system/utils"
+	"github.com/spf13/viper"
 )
 
 func newEmailTemplateService(t *testing.T) (*EmailTemplateService, *handler.Handler, error) {
@@ -15,12 +19,22 @@ func newEmailTemplateService(t *testing.T) (*EmailTemplateService, *handler.Hand
 		return nil, nil, err
 	}
 
-	c, err := newConfig(t)
+	c, v, err := newConfig(t)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	h.SetDefaultConfig(c)
+	h.SetViper("config", v)
+
+	// viper for test-data
+	viperTest := viper.New()
+	viperTest.SetConfigType("yaml")
+	viperTest.SetConfigName("test-data")
+	viperTest.AddConfigPath("../../../../conf/data")
+	viperTest.ReadInConfig()
+	h.SetViper("test-data", viperTest)
+
 	if err := initialize.LoadAllDatabaseConnection(h); err != nil {
 		return nil, nil, err
 	}
@@ -62,8 +76,14 @@ func TestEmailTemplateService_FindByCode(t *testing.T) {
 		return
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.app-layer.service.find-by-code")
+
 	req := new(appDTO.ETFindByCodeReqDTO)
-	req.Code = "test.code"
+	req.Code = testData["et-code"]
 
 	i := newIdentity(h, t)
 	i.RequestInfo.RequestObject = "/api/v1/email/template/*"
@@ -88,14 +108,22 @@ func TestEmailTemplateService_Create(t *testing.T) {
 		return
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.app-layer.service.create")
+
+	unique := utils.GenerateUUID()
 	req := new(appDTO.ETCreateReqDTO)
-	req.Code = "test.code.03"
-	req.Name = "Template Name 03"
-	req.IsActive = true
-	req.EmailFormat = "TEXT"
+	req.Code = fmt.Sprintf(testData["et-code"], unique)
+	req.Name = fmt.Sprintf(testData["et-name"], unique)
+	// req.IsActive = true/false
+	req.IsActive, _ = strconv.ParseBool(testData["et-is-active"])
+	req.EmailFormat = testData["et-email-format"]
 	req.Template = &domSchema.ETCreateVersion{
-		SubjectTpl: "Subject Template",
-		BodyTpl:    `{{define "T"}}Body Template{{end}}`,
+		SubjectTpl: testData["et-tpl-subject"],
+		BodyTpl:    testData["et-tpl-body"],
 	}
 
 	i := newIdentity(h, t)
@@ -110,6 +138,16 @@ func TestEmailTemplateService_Create(t *testing.T) {
 
 	if resp != nil {
 		respJSON := resp.ToJSON()
+		// save to test-data
+		// save result for next test
+		viper.Set("test-data.email.email-template.app-layer.service.update.et-code", req.Code)
+		viper.Set("test-data.email.email-template.app-layer.service.update.et-name", req.Name)
+
+		viper.Set("test-data.email.email-template.app-layer.service.set-active.et-code", req.Code)
+		viper.Set("test-data.email.email-template.app-layer.service.delete.et-code", req.Code)
+		if err := viper.WriteConfig(); err != nil {
+			t.Errorf("Error: viper.WriteConfig(), %s", err.Error())
+		}
 		t.Logf("Resp: %s", string(respJSON))
 	}
 }
@@ -121,17 +159,24 @@ func TestEmailTemplateService_Update(t *testing.T) {
 		return
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.app-layer.service.update")
+
 	req := new(appDTO.ETUpdateReqDTO)
 	req.Keys = new(appDTO.ETUpdateKeysDTO)
-	req.Keys.Code = "test.code.03"
+	req.Keys.Code = testData["et-code"]
 
 	req.Data = new(appDTO.ETUpdateDataDTO)
-	req.Data.Name = "Template Name 03 Updated"
-	req.Data.IsActive = true
-	req.Data.EmailFormat = "TEXT"
+	req.Data.Name = testData["et-name"] + " Updated"
+	// req.Data.IsActive = true/false
+	req.Data.IsActive, _ = strconv.ParseBool(testData["et-is-active"])
+	req.Data.EmailFormat = testData["et-email-format"]
 	req.Data.Template = &domSchema.ETUpdateVersion{
-		SubjectTpl: "Subject Template Updated",
-		BodyTpl:    `{{define "T"}}Body Template Updated{{end}}`,
+		SubjectTpl: testData["et-tpl-subject"],
+		BodyTpl:    testData["et-tpl-body"],
 	}
 
 	i := newIdentity(h, t)
@@ -157,12 +202,19 @@ func TestEmailTemplateService_SetActive(t *testing.T) {
 		return
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.app-layer.service.set-active")
+
 	req := new(appDTO.ETSetActiveReqDTO)
 	req.Keys = new(appDTO.ETSetActiveKeysDTO)
-	req.Keys.Code = "test.code.03"
+	req.Keys.Code = testData["et-code"]
 
 	req.Data = new(appDTO.ETSetActiveDataDTO)
-	req.Data.IsActive = true
+	// req.Data.IsActive = true/false
+	req.Data.IsActive, _ = strconv.ParseBool(testData["et-is-active"])
 
 	i := newIdentity(h, t)
 	i.RequestInfo.RequestObject = "/api/v1/email/template/set-active/*"
@@ -187,8 +239,14 @@ func TestEmailTemplateService_Delete(t *testing.T) {
 		return
 	}
 
+	viper, err := h.GetViper("test-data")
+	if err != nil {
+		t.Errorf("GetViper: %s", err.Error())
+	}
+	testData := viper.GetStringMapString("test-data.email.email-template.app-layer.service.delete")
+
 	req := new(appDTO.ETDeleteReqDTO)
-	req.Code = "test.code.03"
+	req.Code = testData["et-code"]
 
 	i := newIdentity(h, t)
 	i.RequestInfo.RequestObject = "/api/v1/email/template/*"
