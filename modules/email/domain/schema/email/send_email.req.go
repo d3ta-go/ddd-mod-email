@@ -25,6 +25,8 @@ type MailAddress struct {
 type ProcessingType string
 
 const (
-	SYNCProcess  ProcessingType = "SYNC"
+	// SYNCProcess represent SYNC-hronous processing type
+	SYNCProcess ProcessingType = "SYNC"
+	// ASYNCProcess represent ASYNC-hronous processing type
 	ASYNCProcess ProcessingType = "ASYNC"
 )

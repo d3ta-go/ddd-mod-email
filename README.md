@@ -1,6 +1,5 @@
 # ddd-mod-email ( [![Go Report Card](https://goreportcard.com/badge/github.com/d3ta-go/ddd-mod-email)](https://goreportcard.com/report/github.com/d3ta-go/ddd-mod-email) )
 
-
 DDD Module: Email (Generic Subdomain)
 
 As a part of `Simple Implementation of Modular DDD Technical Architecture Patterns in Go`.
@@ -27,7 +26,7 @@ C. Common System Libraries [ [d3ta-go/system](https://github.com/d3ta-go/system)
 6. Migrations
 7. Utils
 
-D. Databases (Indirect)
+D. Databases
 
 1. MySQL (tested)
 2. PostgreSQL (untested)
