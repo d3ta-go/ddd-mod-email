@@ -1,4 +1,5 @@
-# ddd-mod-email
+# ddd-mod-email ( [![Go Report Card](https://goreportcard.com/badge/github.com/d3ta-go/ddd-mod-email)](https://goreportcard.com/report/github.com/d3ta-go/ddd-mod-email) )
+
 
 DDD Module: Email (Generic Subdomain)
 
