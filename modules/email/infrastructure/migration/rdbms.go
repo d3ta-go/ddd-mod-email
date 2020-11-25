@@ -140,13 +140,18 @@ func (m *RDBMSMigration) _runIdentitySeeds() error {
 	if err != nil {
 		return err
 	}
+	seed20201125001InitCasbinGraphQL, err := migRunner.NewSeed20201125001InitCasbinGraphQL(m.handler)
+	if err != nil {
+		return err
+	}
 
 	cfg, err := m.handler.GetDefaultConfig()
 	if err != nil {
 		return err
 	}
 	if err := m.migrator.RunSeeds(m.handler, cfg.Databases.IdentityDB.ConnectionName,
-		seed20201118002InitCasbin); err != nil {
+		seed20201118002InitCasbin,
+		seed20201125001InitCasbinGraphQL); err != nil {
 		return err
 	}
 	return nil
@@ -157,13 +162,18 @@ func (m *RDBMSMigration) _rollBackIdentitySeeds() error {
 	if err != nil {
 		return err
 	}
+	seed20201125001InitCasbinGraphQL, err := migRunner.NewSeed20201125001InitCasbinGraphQL(m.handler)
+	if err != nil {
+		return err
+	}
 
 	cfg, err := m.handler.GetDefaultConfig()
 	if err != nil {
 		return err
 	}
 	if err := m.migrator.RollBackSeeds(m.handler, cfg.Databases.IdentityDB.ConnectionName,
-		seed20201118002InitCasbin); err != nil {
+		seed20201118002InitCasbin,
+		seed20201125001InitCasbinGraphQL); err != nil {
 		return err
 	}
 	return nil

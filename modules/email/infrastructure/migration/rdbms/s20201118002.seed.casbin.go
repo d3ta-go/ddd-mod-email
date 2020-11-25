@@ -28,6 +28,27 @@ func (c *IamCasbinRule) TableName() string {
 	return "iam_casbin_rule"
 }
 
+var cPs = []IamCasbinRule{
+	// role:system - email
+	{PType: "p", V0: "role:system", V1: "system.module.email.send", V2: "EXECUTE"},
+	{PType: "p", V0: "role:system", V1: "system.module.email.template.findbycode", V2: "READ"},
+
+	// role:admin - email
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/send", V2: "POST"},
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/templates/list-all", V2: "GET"},
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template", V2: "POST"},
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/*", V2: "GET"},
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/update/*", V2: "PUT"},
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/set-active/*", V2: "PUT"},
+	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/*", V2: "DELETE"},
+}
+
+var vGs = []IamCasbinRule{
+	// group -> role (for flexibility)
+	{PType: "g", V0: "group:system", V1: "role:system"},
+	{PType: "g", V0: "group:admin", V1: "role:admin"},
+}
+
 // Seed20201118002InitCasbin type
 type Seed20201118002InitCasbin struct {
 	migRDBMS.BaseGormMigratorRunner
@@ -73,27 +94,6 @@ func (dmr *Seed20201118002InitCasbin) RollBack(h *handler.Handler, dbGorm *gorm.
 		}
 	}
 	return nil
-}
-
-var cPs = []IamCasbinRule{
-	// role:system - email
-	{PType: "p", V0: "role:system", V1: "system.module.email.send", V2: "EXECUTE"},
-	{PType: "p", V0: "role:system", V1: "system.module.email.template.findbycode", V2: "READ"},
-
-	// role:admin - email
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/send", V2: "POST"},
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/templates/list-all", V2: "GET"},
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template", V2: "POST"},
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/*", V2: "GET"},
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/update/*", V2: "PUT"},
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/set-active/*", V2: "PUT"},
-	{PType: "p", V0: "role:admin", V1: "/api/v1/email/template/*", V2: "DELETE"},
-}
-
-var vGs = []IamCasbinRule{
-	// group -> role (for flexibility)
-	{PType: "g", V0: "group:system", V1: "role:system"},
-	{PType: "g", V0: "group:admin", V1: "role:admin"},
 }
 
 func (dmr *Seed20201118002InitCasbin) _seeds() error {
